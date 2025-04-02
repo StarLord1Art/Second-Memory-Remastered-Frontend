@@ -1,5 +1,4 @@
 import React, { useState, useEffect } from "react";
-import { data, Link } from "react-router-dom";
 import { useNavigate } from "react-router-dom";
 
 function Main(bucketName) {
@@ -16,7 +15,7 @@ function Main(bucketName) {
     })
       .then((response) => response.json())
       .then((response) => {
-        console.log(response.result);
+        console.log(response);
         setBucketRootDirectoriesList(response.result);
       });
   }, []);
@@ -31,7 +30,7 @@ function Main(bucketName) {
       </header>
       <main>
         <div>
-          <h1 id="welcome">Добрый день, {userName}!</h1>
+          <h1 id="welcome">Добрый день, UserName!</h1>
           <div className="sidebar">
             <button id="close">Закрыть</button>
             <ul style={{ listStyle: "none", padding: "0px" }}>
@@ -51,7 +50,7 @@ function Main(bucketName) {
                         })
                           .then((response) => response.json())
                           .then((response) => {
-                            console.log(response.result);
+                            console.log(response);
                             setFilesInDirectoryList(response.result);
                           });
                       }}
