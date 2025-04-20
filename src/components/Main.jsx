@@ -1,111 +1,73 @@
-import React, { useState, useEffect } from "react";
+import React, {useState, useEffect, useContext} from "react";
 import { useNavigate } from "react-router-dom";
+import {Context} from "../Context";
+import Header from "./Header";
 
-function Main(bucketName) {
+function Main() {
+  const [bucketsList, setBucketsList] = useState([
+      "Buck1",
+      "Buck2",
+      "Buck3",
+  ]);
+  const [bucketName, setBucketName] = useState("");
   const navigate = useNavigate();
-  const [bucketRootDirectoriesList, setBucketRootDirectoriesList] = useState(
-    []
-  );
-  const [filesInDirectoryList, setFilesInDirectoryList] = useState([]);
+  const {isUserAuthenticated} = useContext(Context);
 
   useEffect(() => {
-    fetch("http://localhost:5432/root/directories", {
-      method: "GET",
-      body: JSON.stringify({ bucketName: `${bucketName}` }),
-    })
+    fetch("http://localhost:5432/api/v1/buckets")
       .then((response) => response.json())
       .then((response) => {
         console.log(response);
-        setBucketRootDirectoriesList(response.result);
-      });
-  }, []);
+        setBucketsList(response.result);
+      })
+        .catch((error) => console.log(error));
+  }, [isUserAuthenticated, bucketsList]);
+
+  function createBucket(bucketName) {
+      console.log(bucketName);
+      fetch(`http://localhost:5432/api/v1/buckets/${bucketName}`, {
+          method: "POST",
+      })
+        .then((response) => response.json())
+        .then((response) => {
+            console.log(response)
+            setBucketsList((bucketsList) => [...bucketsList, response.result]);
+        }).catch((error) => {console.log(error)})
+  }
 
   return (
     <>
-      <header>
-        <div id="header">
-          <button id="openSideMenu">Открыть меню</button>
-          <button id="logout">Выйти</button>
-        </div>
-      </header>
+        <Header />
       <main>
         <div>
-          <h1 id="welcome">Добрый день, UserName!</h1>
-          <div className="sidebar">
-            <button id="close">Закрыть</button>
-            <ul style={{ listStyle: "none", padding: "0px" }}>
-              {bucketRootDirectoriesList.forEach((directory) => {
-                console.log(directory);
-                return (
-                  <li>
-                    <h2
-                      className="item"
-                      onClick={() => {
-                        fetch("http://localhost:5432/info/directory", {
-                          method: "GET",
-                          body: JSON.stringify({
-                            path: directory.path,
-                            bucketName: bucketName,
-                          }),
-                        })
-                          .then((response) => response.json())
-                          .then((response) => {
-                            console.log(response);
-                            setFilesInDirectoryList(response.result);
-                          });
-                      }}
-                    >
-                      {directory.name}
-                    </h2>
-                  </li>
-                );
-              })}
-            </ul>
-          </div>
-          {filesInDirectoryList ? (
-            <>
-              <div
-                style={{
-                  width: "80%",
-                  display: "flex",
-                  justifyContent: "space-between",
-                }}
-              >
-                <h2>Имя файла:</h2>
-                <h2>Последнее обновление:</h2>
-                <h2>Владелец:</h2>
-                <h2>Теги:</h2>
-              </div>
-              <ul
-                style={{ listStyle: "none", padding: "0px", marginTop: "0px" }}
-              >
-                {filesInDirectoryList.forEach((file) => {
-                  console.log(file);
-                  return (
-                    <li>
-                      <div
-                        className="file"
-                        onClick={() => {
-                          navigate(`info/file/${file.id}`, {
-                            state: {
-                              data: { fileId: file.id },
-                            },
-                          });
-                        }}
-                      >
-                        <h2>{file.name}</h2>
-                        <h2>{file.lastUpdateDate}</h2>
-                        <h2>{file.owner}</h2>
-                        <h2>{file.tags}</h2>
-                      </div>
-                    </li>
-                  );
-                })}
-              </ul>
-            </>
-          ) : (
-            <h1>Папка не выбрана</h1>
-          )}
+          <h1 id="welcome">Добрый день!</h1>
+            <div>
+                <input type="text" value={bucketName} onChange={(event) => setBucketName(() => event.target.value)} placeholder="Введите название бакета: "/>
+                <button id="createBucket" onClick={() => createBucket(bucketName)}>Создать бакет</button>
+            </div>
+          <ul style={{ listStyle: "none", padding: "0px", marginTop: "0px" }}>
+            {bucketsList.map((bucket) => {
+              console.log(bucket);
+              return (
+                <li>
+                  <h2
+                    className="item"
+                    onClick={() => {
+                      navigate("root/directories", {
+                        state: {
+                          data: {
+                            bucketName: bucket,
+                          },
+                        },
+                      });
+                    }}
+                  >
+                    {bucket}
+                  </h2>
+                </li>
+              );
+            })}
+          </ul>
         </div>
       </main>
     </>
