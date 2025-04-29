@@ -1,8 +1,12 @@
 import React, {useState, useContext} from "react";
 import {Link} from "react-router-dom";
-import {Context} from "../Context";
+import {Context} from "../../Context";
+import Search from "antd/es/input/Search";
+import {Button, Layout} from "antd";
 
-function Header() {
+const {Header} = Layout;
+
+function HeaderAntd({bgColor}) {
     const [searchedFileName, setSearchedFileName] = useState("");
     const {isUserAuthenticated, setIsUserAuthenticated} = useContext(Context);
 
@@ -40,24 +44,34 @@ function Header() {
 
     return (
         <>
-            <header>
-                <div id="header">
-                    <button id="openSideMenu">Открыть меню</button>
-                    <div id="search">
-                        <input type={"text"} value={searchedFileName} onChange={(event) => setSearchedFileName(() => event.target.value)} placeholder={"Введите название файла: "}/>
-                        <button id="searchFile" onClick={() => searchFile(searchedFileName)}>Поиск</button>
-                    </div>
-                    {isUserAuthenticated ? (
-                        <button id="logout" onClick={logout}>Выйти</button>
-                    ) : (
-                        <Link to={{ pathname: "/signup" }}>
-                            <button id="register">Зарегистрироваться</button>
-                        </Link>
-                    )}
-                </div>
-            </header>
+            <Header style={{
+                position: 'sticky',
+                top: 0,
+                zIndex: 1,
+                width: '100%',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'space-between',
+                backgroundColor: `${bgColor}`,
+            }}>
+                <Search
+                    placeholder="Введите название файла"
+                    allowClear
+                    enterButton="Поиск"
+                    size="middle"
+                    onSearch={searchFile}
+                    style={{ width: '20%' }}
+                />
+                {isUserAuthenticated ? (
+                    <Button type="primary" onClick={logout}>Выйти</Button>
+                ) : (
+                    <Link to={{ pathname: "/signup" }}>
+                        <Button type="primary">Зарегистрироваться</Button>
+                    </Link>
+                )}
+            </Header>
         </>
     )
 }
 
-export default Header;
+export default HeaderAntd;

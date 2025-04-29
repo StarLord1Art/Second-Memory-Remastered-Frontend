@@ -2,7 +2,6 @@ import "./App.css";
 import { createBrowserRouter, RouterProvider } from "react-router-dom";
 import Main from "./components/Main";
 import FileInfoPage from "./components/FileInfoPage";
-import FilesPage from "./components/FilesPage";
 import BucketPage from "./components/BucketPage";
 import SignUpPage from "./components/SignUpPage";
 import SignInPage from "./components/SignInPage";
@@ -30,11 +29,7 @@ function App() {
       element: <BucketPage />,
     },
     {
-      path: "info/directory",
-      element: <FilesPage />,
-    },
-    {
-      path: "info/file/:fileId",
+      path: "root/directories/info/file/:fileId",
       element: <FileInfoPage />,
     },
   ]);
