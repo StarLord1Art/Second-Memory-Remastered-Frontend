@@ -25,11 +25,11 @@ function App() {
       element: <SignInPage />,
     },
     {
-      path: "root/directories",
+      path: "bucket/:bucketName",
       element: <BucketPage />,
     },
     {
-      path: "root/directories/info/file/:fileId",
+      path: "bucket/:bucketName/file/:fileId",
       element: <FileInfoPage />,
     },
   ]);

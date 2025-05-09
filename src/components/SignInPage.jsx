@@ -12,17 +12,20 @@ function SignInPage() {
 
     function authenticateUser(formData) {
         console.log(formData);
-        fetch("http://localhost:5432/api/v1/signin", {
+        fetch("http://localhost:8080/api/v1/users/sign-in", {
             method: "POST",
             headers: {
                 "Content-Type": "application/json",
             },
+            credentials: "include",
             body: JSON.stringify(formData),
-        }).then((response) => response.json()).then((response) => {
-            console.log(response);
+        }).then((response) => {
             if (response.status === 200) {
-                setIsUserAuthenticated(() => true);
-                navigate("/");
+                response.text().then(data => {
+                    console.log(data);
+                    setIsUserAuthenticated(() => true);
+                    navigate("/");
+                })
             } else {
                 alert(response.statusText);
             }

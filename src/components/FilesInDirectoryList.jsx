@@ -8,40 +8,12 @@ const {Title} = Typography;
 
 function FilesInDirectoryList(props) {
   const navigate = useNavigate();
-  const [filesInDirectoryList, setFilesInDirectoryList] = useState([
-      {
-          id: 1,
-          name: "File 1",
-          owner: "Artem",
-          creationDate: new Date(),
-          lastModifiedDate: new Date(),
-          tags: ["Work", "Study", "Pleasure"],
-          accessLevel: "private"
-      },
-      {
-          id: 2,
-          name: "File 2",
-          owner: "Artem",
-          creationDate: new Date(),
-          lastModifiedDate: new Date(),
-          tags: ["Work", "Study", "Pleasure"],
-          accessLevel: "private"
-      },
-      {
-          id: 3,
-          name: "File 3",
-          owner: "Artem",
-          creationDate: new Date(),
-          lastModifiedDate: new Date(),
-          tags: ["Work", "Study", "Pleasure"],
-          accessLevel: "private"
-      }
-  ]);
+  const [filesInDirectoryList, setFilesInDirectoryList] = useState([]);
   const {isUserAuthenticated} = useContext(Context);
 
   useEffect(() => {
-    fetch("http://localhost:5432/api/v1/info/directory", {
-      method: "GET",
+    fetch("http://localhost:8080/api/v1/info/directory", {
+      method: "POST",
         headers: {
           contentType: "application/json",
         },
@@ -63,17 +35,15 @@ function FilesInDirectoryList(props) {
         {filesInDirectoryList ? (
             <>
                 <List
-                    style={{width:'50%', margin: '3% 0 0 25%'}}
+                    style={{width:'50%', marginLeft: '25%'}}
                     bordered
                     dataSource={filesInDirectoryList}
                     renderItem={file => (
                         <List.Item key={file.id} style={{display: 'flex', justifyContent: 'left', cursor: 'pointer'}} onClick={() => {
-                            navigate(`info/file/${file.id}`, {
+                            navigate(`file/${file.id}`, {
                                 state: {
-                                    data: {
-                                        fileId: file.id,
-                                        bucketName: props.data.bucketName,
-                                    },
+                                    fileId: file.id,
+                                    bucketName: props.data.bucketName,
                                 },
                             });
                         }}>

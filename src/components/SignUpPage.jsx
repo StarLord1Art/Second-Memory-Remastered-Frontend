@@ -10,16 +10,18 @@ function SignUpPage() {
 
   function registerUser(formData) {
     console.log(formData);
-    fetch("http://localhost:5432/api/v1/signup", {
+    fetch("http://localhost:8080/api/v1/users/sign-up", {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
       },
       body: JSON.stringify(formData)
-    }).then((response) => response.json()).then((response) => {
-      console.log(response);
+    }).then((response) => {
       if (response.status === 201) {
-        navigate("/signin");
+        response.json().then(data => {
+          console.log(data)
+          navigate("/signin");
+        })
       } else {
         alert(response.statusText);
       }
@@ -30,7 +32,7 @@ function SignUpPage() {
     <Form form={form} name={'register'} style={{ maxWidth: 600, margin: "0 auto", marginTop: "10%" }} onFinish={(values) => registerUser(values)} scrollToFirstError>
       <Title>Регистрация</Title>
       <Form.Item
-          name="nickname"
+          name="name"
           label="Имя пользователя"
           tooltip="Как к Вам обращаться?"
           rules={[{ required: true, message: 'Пожалуйста введите имя пользователя!', whitespace: true }]}

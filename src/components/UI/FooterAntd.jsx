@@ -6,7 +6,7 @@ const {Footer} = Layout;
 function FooterAntd() {
     return (
         <Footer style={{ textAlign: 'center' }}>
-            Second Memory ©{new Date().getFullYear()} Created by MTS Team
+            Second Memory ©{new Date().getFullYear()} Created by MIPT Team
         </Footer>
     )
 }
