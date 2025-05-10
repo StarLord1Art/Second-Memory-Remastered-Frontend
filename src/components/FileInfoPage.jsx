@@ -1,8 +1,8 @@
 import React, {useState, useEffect, useContext, useRef} from "react";
 import {Link, useLocation, useNavigate} from "react-router-dom";
 import {Context} from "../Context";
-import {Breadcrumb, Button, Divider, Input, Layout, Tag, theme, Typography} from 'antd';
-import {DownloadOutlined, EditOutlined, PlusOutlined} from "@ant-design/icons";
+import {Breadcrumb, Button, Divider, Input, Layout, Select, Tag, theme, Typography} from 'antd';
+import {DownloadOutlined, EditOutlined, PlusOutlined, SettingOutlined} from "@ant-design/icons";
 import FooterAntd from "./UI/FooterAntd";
 import ModalAntd from "./UI/ModalAntd";
 
@@ -20,6 +20,9 @@ function FileInfoPage() {
   const inputRef = useRef(null);
   const [open, setOpen] = useState(false);
   const [confirmLoading, setConfirmLoading] = useState(false);
+  const [chosenOption, setChosenOption] = useState('');
+  const [email, setEmail] = useState('');
+  const [role, setRole] = useState('');
 
   useEffect(() => {
         let _a;
@@ -33,13 +36,24 @@ function FileInfoPage() {
         method: 'POST',
         credentials: 'include'
     })
-      .then((response) => response.json())
       .then((response) => {
-        console.log(response);
-        setFileInfo(response);
-      })
-        .catch((error) => console.log(error));
-  }, [isUserAuthenticated, state.fileId]);
+          if (response.status === 200) {
+              response.json().then(data => {
+                  console.log(data);
+                  setFileInfo(data);
+              })
+          } else if (response.status === 400) {
+              alert("Пожалуйста, войдите в аккаунт или зарегистрируйтесь!");
+              navigate("/signup")
+          } else if (response.status === 404) {
+              alert("У Вас нет прав доступа для просмотра информации об этом файле!");
+              navigate("/");
+          } else {
+              alert("Что-то пошло не так, попробуйте снова позже")
+              navigate("/");
+          }
+      }).catch((error) => console.log(error));
+  }, [isUserAuthenticated, navigate, state.bucket, state.fileId]);
 
   function deleteFile() {
       fetch(`http://localhost:8080/api/v1/files/delete?fileId=${state.fileId}`, {
@@ -49,11 +63,7 @@ function FileInfoPage() {
           if (response.status === 200) {
               response.json().then((data) => {
                   console.log(data);
-                  navigate(`/bucket/${state.bucket.name}`, {
-                      state: {
-                          bucket: state.bucket,
-                      },
-                  });
+                  navigate("/");
               })
           } else {
               alert("Что-то пошло не так, попробуйте снова позже")
@@ -64,14 +74,7 @@ function FileInfoPage() {
   }
 
   function downloadFile() {
-      fetch(`http://localhost:8080/api/v1/files/download?fileId=${state.fileId}`, {
-          method: "GET",
-          credentials: 'include',
-      }).then((response) => response.text()).then((response) => {
-          console.log(response);
-      }).catch((error) => {
-          console.log(error);
-      })
+      window.location.href = `http://localhost:8080/api/v1/files/download?fileId=${state.fileId}`;
   }
 
   function renameFile() {
@@ -98,10 +101,7 @@ function FileInfoPage() {
   }
 
   function addTag() {
-      if (inputValue && fileInfo.tags.forEach(tag => {
-          return tag.name !== inputValue;
-
-      })) {
+      if (inputValue.trim() !== "") {
           fetch(`http://localhost:8080/api/v1/tags/add/tag/to/file?fileId=${state.fileId}&tagName=${inputValue}`, {
               method: "POST",
               credentials: 'include',
@@ -109,7 +109,7 @@ function FileInfoPage() {
               if (response.status === 201) {
                   response.json().then((data) => {
                       console.log(data);
-                      setFileInfo({...fileInfo, tags: [...fileInfo.tags, data]});
+                      setFileInfo({...fileInfo, lastModifiedTs: data.lastModifiedTime, tags: [...fileInfo.tags, data]});
                   })
               } else {
                   alert("Что-то пошло не так, попробуйте снова позже");
@@ -117,8 +117,6 @@ function FileInfoPage() {
           }).catch((error) => {
               console.log(error);
           })
-      } else {
-          alert("Тег с таким названием уже существует!");
       }
       setInputVisible(false);
       setInputValue('');
@@ -132,7 +130,7 @@ function FileInfoPage() {
           if (response.status === 200) {
               response.json().then((data) => {
                   console.log(data);
-                  setFileInfo({...fileInfo, tags: fileInfo.tags.filter((tg) => tg.id !== tagId)});
+                  setFileInfo({...fileInfo, lastModifiedTs: data.lastModifiedTime, tags: fileInfo.tags.filter((tg) => tg.id !== tagId)});
               })
           } else {
               alert("Что-то пошло не так, попробуйте снова позже")
@@ -142,11 +140,40 @@ function FileInfoPage() {
       })
   }
 
+  function configureFileAccess() {
+      fetch("http://localhost:8080/api/v1/roles/creation", {
+          method: "POST",
+          credentials: "include",
+          headers: {
+              "Content-Type": "application/json"
+          },
+          body: JSON.stringify({email: email, fileId: state.fileId, Role: role})
+      }).then((response) => {
+          if (response.status === 201) {
+              response.text().then((data) => {
+                  console.log(data);
+              })
+          } else {
+              alert("Что-то пошло не так, попробуйте снова позже")
+          }
+          handleCancel()
+      }).catch((error) => {
+          console.log(error);
+      })
+  }
+
   const handleCancel = () => {
       setOpen(false);
       setConfirmLoading(false);
       setNewFileName('');
+      setEmail('')
+      setRole('')
   }
+
+  const handleChange = value => {
+      console.log(`selected ${value}`);
+      setRole(value)
+  };
 
   const {
       token: { colorBgContainer, borderRadiusLG },
@@ -171,12 +198,12 @@ function FileInfoPage() {
                 <Breadcrumb.Item>
                     <Link to={{ pathname: '/' }}>Главная</Link>
                 </Breadcrumb.Item>
-                <Breadcrumb.Item>
-                    <Link to={{ pathname: `/bucket/${state.bucket.name}` }} state={{bucket: state.bucket}}>Бакет</Link>
-                </Breadcrumb.Item>
-                <Breadcrumb.Item>
-                    <Link to={{ pathname: `/bucket/${state.bucket.name}/file/${fileInfo.fileId}` }} state={{bucket: state.bucket, fileId: fileInfo.fileId}}>Файл</Link>
-                </Breadcrumb.Item>
+                {/*<Breadcrumb.Item>*/}
+                {/*    <Link to={{ pathname: `/bucket/${state.bucket.name}` }} state={{bucket: state.bucket}}>Бакет</Link>*/}
+                {/*</Breadcrumb.Item>*/}
+                {/*<Breadcrumb.Item>*/}
+                {/*    <Link to={{ pathname: `/bucket/${state.bucket.name}/file/${fileInfo.fileId}` }} state={{bucket: state.bucket, fileId: fileInfo.fileId}}>Файл</Link>*/}
+                {/*</Breadcrumb.Item>*/}
             </Breadcrumb>
             <div
                 style={{
@@ -197,7 +224,7 @@ function FileInfoPage() {
                         <h2 style={{justifySelf: "left"}}>Размер: {Math.ceil(fileInfo.size / 1024)} КБ</h2>
                         <h2 style={{justifySelf: "left"}}>Дата добавления: {new Date(fileInfo.creationTs).toLocaleString()}</h2>
                         <h2 style={{justifySelf: "left"}}>Последнее обновление: {new Date(fileInfo.lastModifiedTs).toLocaleString()}</h2>
-                        <h2 style={{justifySelf: "left"}}>Разрешение на скачивание: {fileInfo.accessLevel}</h2>
+                        <h2 style={{justifySelf: "left"}}>Доступ к файлу: {fileInfo.role}</h2>
                         <div style={{display: 'flex', justifyContent: 'left'}}>
                             {fileInfo.tags?.map(tag => (
                                 <span key={tag.id} style={{ display: 'inline-block' }}>
@@ -231,24 +258,46 @@ function FileInfoPage() {
                             )}
                         </div>
                     </div>
-                    <div style={{width: "34%"}}>
-                        <Button type={'primary'} icon={<EditOutlined />} onClick={() => setOpen(true)}>Переименовать файл</Button>
+                    <div style={{width: "48%"}}>
+                        <Button type={'primary'} icon={<EditOutlined />} onClick={() => {
+                            setChosenOption("1")
+                            setOpen(true)
+                        }}>Переименовать файл</Button>
+                        <Button type={"primary"} icon={<SettingOutlined />} style={{marginLeft: "1%"}} onClick={() => {
+                            setChosenOption("2")
+                            setOpen(true)
+                        }}>Настроить доступ</Button>
                         <ModalAntd
-                            title={"Переименовать файл"}
+                            title={chosenOption === "1" ? "Переименовать файл" : "Настроить доступ к файлу"}
                             open={open}
-                            onOk={renameFile}
+                            onOk={chosenOption === "1" ? renameFile : configureFileAccess}
                             confirmLoading={confirmLoading}
                             onCancel={handleCancel}
                             footer={[
                                 <Button key="back" onClick={handleCancel}>
                                     Отменить
                                 </Button>,
-                                <Button key="submit" type="primary" loading={confirmLoading} onClick={renameFile}>
-                                    Переименовать
+                                <Button key="submit" type="primary" loading={confirmLoading} onClick={chosenOption === "1" ? renameFile : configureFileAccess}>
+                                    {chosenOption === "1" ? "Переименовать" : "Настроить"}
                                 </Button>
                             ]}
                         >
-                            <Input type={"text"} value={newFileName} onChange={(event) => setNewFileName(() => event.target.value)} placeholder={"Введите новое название файла"}/>
+                            {chosenOption === "1" ? (
+                                <Input type={"text"} value={newFileName} onChange={(event) => setNewFileName(() => event.target.value)} placeholder={"Введите новое название файла"}/>
+                            ) : (
+                                <>
+                                    <Input type={"text"} value={email} onChange={(event) => setEmail(event.target.value)} placeholder={"Введите почту пользователя"}/>
+                                    <Select
+                                        prefix="Уровень доступа: "
+                                        style={{ width: 200, marginTop: "2%" }}
+                                        onChange={handleChange}
+                                        options={[
+                                            { value: 'WRITER', label: 'Изменение файла' },
+                                            { value: 'READER', label: 'Просмотр файла' },
+                                        ]}
+                                    />
+                                </>
+                            )}
                         </ModalAntd>
 
                         <Button type="primary" style={{margin: "0 1%"}} icon={<DownloadOutlined />} onClick={downloadFile}>

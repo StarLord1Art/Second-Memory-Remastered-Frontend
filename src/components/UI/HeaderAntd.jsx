@@ -1,5 +1,5 @@
 import React, { useContext} from "react";
-import {Link} from "react-router-dom";
+import {Link, useNavigate} from "react-router-dom";
 import {Context} from "../../Context";
 import {Button, Layout} from "antd";
 
@@ -7,6 +7,7 @@ const {Header} = Layout;
 
 function HeaderAntd({bgColor, children}) {
     const {isUserAuthenticated, setIsUserAuthenticated} = useContext(Context);
+    const navigate = useNavigate();
 
     function logout() {
         fetch("http://localhost:8080/api/v1/users/logout", {
@@ -18,6 +19,7 @@ function HeaderAntd({bgColor, children}) {
                     response.text().then((data) => {
                         console.log(data);
                         setIsUserAuthenticated(() => false);
+                        navigate("/");
                     })
                 } else {
                     alert("Что-то пошло не так, попробуйте снова позже")

@@ -58,7 +58,7 @@ function Main() {
           if (response.status === 200) {
               response.json().then((data) => {
                   console.log(data);
-                  setBucketsList((bucketsList) => bucketsList.filter((bucket) => bucket !== bucketName));
+                  setBucketsList(bucketsList.filter((bucket) => bucket.id !== bucketId));
               })
           } else {
               alert("Что-то пошло не так, попробуйте снова позже")
@@ -121,14 +121,14 @@ function Main() {
                         bordered
                         dataSource={bucketsList}
                         renderItem={bucket => (
-                            <List.Item key={bucket.id} style={{display: 'flex', justifyContent: 'left', cursor: 'pointer'}} onClick={() => {
+                            <List.Item key={bucket.id} style={{display: 'flex', justifyContent: 'left'}} >
+                                <ContainerOutlined /> <span style={{cursor: 'pointer'}} onClick={() => {
                                 navigate(`bucket/${bucket.name}`, {
                                     state: {
                                         bucket: bucket,
                                     },
                                 });
-                            }}>
-                                <ContainerOutlined /> {bucket.name}
+                            }}>{bucket.name}</span>
                                 <Button type={'text'} style={{marginLeft: "80%"}} icon={<DeleteOutlined />} onClick={() => deleteBucket(bucket.id)}/>
                             </List.Item>
                         )}
