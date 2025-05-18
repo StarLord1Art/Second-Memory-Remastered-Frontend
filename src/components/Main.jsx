@@ -129,7 +129,7 @@ function Main() {
                                     },
                                 });
                             }}>{bucket.name}</span>
-                                <Button type={'text'} style={{marginLeft: "80%"}} icon={<DeleteOutlined />} onClick={() => deleteBucket(bucket.id)}/>
+                                <Button type={'text'} style={{marginLeft: "auto"}} icon={<DeleteOutlined />} onClick={() => deleteBucket(bucket.id)}/>
                             </List.Item>
                         )}
                     />

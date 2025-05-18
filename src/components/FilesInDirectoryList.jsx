@@ -170,7 +170,7 @@ function FilesInDirectoryList({data, setData}) {
                           <FolderOutlined /> <span style={{cursor: 'pointer'}} onClick={() => setData((prevState) => {
                             return {...prevState, folderId: directory.folderId};
                         })}>{directory.name}</span>
-                          <Button type={'text'} style={{marginLeft: "80%"}} icon={<DeleteOutlined />} onClick={() => deleteDirectory(directory.folderId)}/>
+                          <Button type={'text'} style={{marginLeft: "auto"}} icon={<DeleteOutlined />} onClick={() => deleteDirectory(directory.folderId)}/>
                         </List.Item>
                     )}
                 />

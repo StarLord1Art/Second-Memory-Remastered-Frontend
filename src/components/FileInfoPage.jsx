@@ -224,7 +224,7 @@ function FileInfoPage() {
                         <h2 style={{justifySelf: "left"}}>Размер: {Math.ceil(fileInfo.size / 1024)} КБ</h2>
                         <h2 style={{justifySelf: "left"}}>Дата добавления: {new Date(fileInfo.creationTs).toLocaleString()}</h2>
                         <h2 style={{justifySelf: "left"}}>Последнее обновление: {new Date(fileInfo.lastModifiedTs).toLocaleString()}</h2>
-                        <h2 style={{justifySelf: "left"}}>Доступ к файлу: {fileInfo.role}</h2>
+                        <h2 style={{justifySelf: "left"}}>Доступ к файлу: {fileInfo.role === "OWNER" ? "Владелец" : fileInfo.role === "READER" ? "Чтение" : "Изменение"}</h2>
                         <div style={{display: 'flex', justifyContent: 'left'}}>
                             {fileInfo.tags?.map(tag => (
                                 <span key={tag.id} style={{ display: 'inline-block' }}>
